@@ -1,0 +1,26 @@
+name: Market Intelligence Sweep
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Every Monday at midnight
+  workflow_dispatch:
+
+concurrency:
+  group: intel-sweep
+  cancel-in-progress: true
+
+jobs:
+  sweep:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Dependencies
+        run: pip install openai
+      - name: Run Intelligence Sweep
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: python3 intelligence.py
