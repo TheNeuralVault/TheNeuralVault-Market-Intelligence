@@ -1,0 +1,26 @@
+name: Market Intelligence Pulse
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install openai -q
+      - name: Run intelligence sweep
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: python3 intelligence.py intel/brief-$(date +%Y-%m-%d-%H%M).md
+      - name: Commit outputs
+        run: |
+          git config user.name "TheNeuralVault-Intel"
+          git config user.email "intel@theneuralvault.ai"
+          git add intel/ memory/ || true
+          git diff --staged --quiet || git commit -m "intel: weekly sweep $(date +%Y-%m-%d)"
+          git push || true
